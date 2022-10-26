@@ -16,6 +16,6 @@ class PostSeeder extends Seeder
      */
     public function run()
     {
-        Post::factory(100)->has(Comment::factory(rand(0, 100)))->create();
+        $posts = Post::factory(100)->create();
     }
 }
