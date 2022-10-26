@@ -29,13 +29,6 @@ class PostController extends ApiController
             });
         }
 
-        $sortBy = $request->input('sort_by', 'latest');
-        if ($sortBy === 'latest') {
-            $posts->latest();
-        } elseif ($sortBy === 'oldest') {
-            $posts->oldest();
-        }
-
         return $this->respondPagination($request, $posts->paginate($limit));
     }
 
