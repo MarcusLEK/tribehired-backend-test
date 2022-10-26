@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use Illuminate\Http\Request;
 
 class PostController extends ApiController
 {
@@ -14,9 +14,29 @@ class PostController extends ApiController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $limit = min(intval($request->get('limit', 10)), self::DEFAULT_MAX_LIMIT);
+
+        $search = $request->input('search');
+
+        $posts = Post::query()->orderBy('total_number_of_comments', 'desc');
+
+        if (!empty($search)) {
+            $posts = $posts->where(function($q) use ($search) {
+                $q->where('title', 'LIKE', '%' . $search . '%')
+                    ->orWhere('body', 'LIKE', '%' . $search . '%');
+            });
+        }
+
+        $sortBy = $request->input('sort_by', 'latest');
+        if ($sortBy === 'latest') {
+            $posts->latest();
+        } elseif ($sortBy === 'oldest') {
+            $posts->oldest();
+        }
+
+        return $this->respondPagination($request, $posts->paginate($limit));
     }
 
     /**
@@ -48,7 +68,7 @@ class PostController extends ApiController
      */
     public function show(Post $post)
     {
-        //
+        return $this->respond($post);
     }
 
     /**
